@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # We can default to Llama-3.3-70b-specdec or llama3-70b-8192
-    LLM_MODEL: str = "llama-3.3-70b-specdec"
+    # We can default to Llama-3.3-70b-versatile or llama3-70b-8192
+    LLM_MODEL: str = "llama-3.3-70b-versatile"
 
     model_config = SettingsConfigDict(
         env_file=".env",
