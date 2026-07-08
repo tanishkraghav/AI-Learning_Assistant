@@ -1,0 +1,87 @@
+otated_vectors_factor = torch.cat([rotated_vectors_factor, -rotated_vectors_factor], dim=-1)
+                if buckets is None:
+                    buckets = torch.argmax(rotated_vectors_factor, dim=-1)
+                else:
+                    buckets = buckets + (cur_product * torch.argmax(rotated_vectors_factor, dim=-1))
+
+                cur_product = cur_product * bucket_factor
+
+        if attention_mask is not None and (attention_mask.sum().item() < batch_size * attention_mask.shape[-1]):
+            # add an extra bucket for padding tokens only
+            num_buckets = num_buckets + 1
+            # assign padding tokens extra bucket
+            buckets_mask = attention_mask.to(torch.bool)[:, None, None, :].expand(buckets.shape)
+            buckets = torch.where(
+                buckets_mask, buckets, torch.tensor(num_buckets - 1, dtype=torch.long, device=buckets.device)
+            )
+        elif increase_num_buckets:
+            num_buckets = num_buckets + 1
+
+        # buckets is now (Batch_size x Num_Attn_Heads x Num_Hashes x Seq_Len).
+        # Next we add offsets so that bucket numbers from different hashing rounds don't overlap.
+        offsets = torch.arange(num_hashes, device=vectors.device)
+        offsets = (offsets * num_buckets).view((1, 1, -1, 1))
+
+        # expand to batch size and num attention heads
+        offsets = offsets.expand((batch_size, self.num_attention_heads) + offsets.shape[-2:])
+        offset_buckets = (buckets + offsets).flatten(start_dim=2, end_dim=3)
+
+        return offset_buckets
+
+    def _get_sorted_bucket_idx_and_undo_sorted_bucket_idx(self, sequence_length, buckets, num_hashes):
+        # no gradients are needed
+        with torch.no_grad():
+            # hash-based sort
+            sorted_bucket_idx = _stable_argsort(buckets, dim=-1)
+
+            # create simple indices to scatter to, to have undo sort
+            indices = (
+                torch.arange(sorted_bucket_idx.shape[-1], device=buckets.device)
+                .view(1, 1, -1)
+                .expand(sorted_bucket_idx.shape)
+            )
+
+            # get undo sort
+            undo_sorted_bucket_idx = sorted_bucket_idx.new(*sorted_bucket_idx.size())
+            undo_sorted_bucket_idx.scatter_(-1, sorted_bucket_idx, indices)
+
+        return sorted_bucket_idx, undo_sorted_bucket_idx
+
+    def _set_num_buckets(self, sequence_length):
+        # `num_buckets` should be set to 2 * sequence_length // chunk_length as recommended in paper
+        num_buckets_pow_2 = (2 * (sequence_length // self.chunk_length)).bit_length() - 1
+        # make sure buckets are power of 2
+        num_buckets = 2**num_buckets_pow_2
+
+        # factorize `num_buckets` if `num_buckets` becomes too large
+        num_buckets_limit = 2 * max(
+            int((self.max_position_embeddings // self.chunk_length) ** (0.5)),
+            self.chunk_length,
+        )
+        if num_buckets > num_buckets_limit:
+            num_buckets = [2 ** (num_buckets_pow_2 // 2), 2 ** (num_buckets_pow_2 - num_buckets_pow_2 // 2)]
+
+        logger.warning(f"config.num_buckets is not set. Setting config.num_buckets to {num_buckets}...")
+
+        # set num buckets in config to be properly saved
+        self.config.num_buckets = num_buckets
+        self.num_buckets = num_buckets
+
+    def _attend(
+        self,
+        query_vectors,
+        key_vectors,
+        value_vectors,
+        sorted_bucket_idx_per_hash,
+        attention_mask,
+        head_mask,
+        do_standard_self_attention,
+        use_cache,
+    ):
+        # look at previous and following chunks if chunked attention
+        if not do_standard_self_attention:
+            key_vectors = self._look_adjacent(key_vectors, self.num_chunks_before, self.num_chunks_after)
+            value_vectors = self._look_adjacent(value_vectors, self.num_chunks_before, self.num_chunks_after)
+
+        # get logits and dots
+        # (BS, NumAttn, NumHash x NumChunk, Chunk_L x Hidden),(BS, NumAttn, NumHash x NumChunk, Chunk_L * (Num_bef + 

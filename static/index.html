@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnAI - Your Personal Learning Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <h1>LearnAI</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="roadmap">
+                    <i class="fas fa-road"></i>
+                    <span>Roadmap</span>
+                </button>
+                <button class="nav-item" data-tab="projects">
+                    <i class="fas fa-cube"></i>
+                    <span>Projects</span>
+                </button>
+                <button class="nav-item" data-tab="chat">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chat</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-left">
+                    <h2>Welcome Back</h2>
+                    <p id="current-time"></p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-icon">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="btn-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT TABS -->
+            <div class="content">
+                <!-- DASHBOARD TAB -->
+                <section id="dashboard" class="tab-content active">
+                    <div class="welcome-banner">
+                        <h1>Your Learning Journey Starts Here</h1>
+                        <p>Personalized learning paths powered by AI</p>
+                        <button class="btn-primary" onclick="switchTab('roadmap')">
+                            <i class="fas fa-star"></i> Create Roadmap
+                        </button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #3b82f6;">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h3>Learning Paths</h3>
+                            <p class="stat-value">5</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #10b981;">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <h3>Completed</h3>
+                            <p class="stat-value">12</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f59e0b;">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <h3>Streak Days</h3>
+                            <p class="stat-value">7</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #8b5cf6;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h3>Hours Learned</h3>
+                            <p class="stat-value">42</p>
+                        </div>
+                    </div>
+
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Quick Actions</h3>
+                            <div class="action-buttons">
+                                <button class="btn-secondary" onclick="switchTab('roadmap')">
+                                    <i class="fas fa-plus"></i> New Roadmap
+                                </button>
+                                <button class="btn-secondary" onclick="switchTab('projects')">
+                                    <i class="fas fa-lightbulb"></i> Find Project
+                                </button>
+                                <button class="btn-secondary" onclick="switchTab('chat')">
+                                    <i class="fas fa-question"></i> Ask AI
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Recent Activity</h3>
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <span class="activity-icon">📚</span>
+                                    <div>
+                                        <p>Completed Python Basics</p>
+                                        <small>2 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-icon">🚀</span>
+                                    <div>
+                                        <p>Started Web Development</p>
+                                        <small>5 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-icon">💬</span>
+                                    <div>
+                                        <p>Asked AI 8 questions</p>
+                                        <small>Today</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROADMAP TAB -->
+                <section id="roadmap" class="tab-content">
+                    <div class="card">
+                        <h2>Generate Your Learning Roadmap</h2>
+                        <form id="roadmap-form" class="form">
+                            <div class="form-group">
+                                <label>What do you want to learn?</label>
+                                <input type="text" id="goal" placeholder="e.g., Full-stack Web Development" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Experience Level</label>
+                                    <select id="level" required>
+                                        <option>Beginner</option>
+                                        <option>Intermediate</option>
+                                        <option>Advanced</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Hours per Week</label>
+                                    <input type="number" id="hours" value="10" min="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Known Skills (comma separated)</label>
+                                <input type="text" id="skills" placeholder="e.g., Python, HTML">
+                            </div>
+
+                            <button type="submit" class="btn-primary btn-lg">
+                                <i class="fas fa-magic"></i> Generate Roadmap
+                            </button>
+                        </form>
+
+                        <div id="roadmap-result" class="roadmap-result hidden">
+                            <h3>Your Personalized Roadmap</h3>
+                            <div id="roadmap-content"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROJECTS TAB -->
+                <section id="projects" class="tab-content">
+                    <div class="grid">
+                        <div class="card">
+                            <h2>Project Recommendations</h2>
+                            <form id="project-form" class="form">
+                                <div class="form-group">
+                                    <label>Project Topic</label>
+                                    <input type="text" id="project-topic" placeholder="e.g., Build a chatbot" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Difficulty</label>
+                                    <select id="project-difficulty" required>
+                                        <option>Easy</option>
+                                        <option>Medium</option>
+                                        <option>Hard</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-play"></i> Get Recommendations
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3>Active Projects</h3>
+                            <div id="projects-list">
+                                <p class="empty">No active projects. Start a new one!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="project-result" class="card hidden">
+                        <h3>Project Ideas</h3>
+                        <div id="project-content"></div>
+                    </div>
+                </section>
+
+                <!-- CHAT TAB -->
+                <section id="chat" class="tab-content">
+                    <div class="card chat-card">
+                        <h2>AI Learning Assistant</h2>
+                        <div class="chat-container">
+                            <div class="messages" id="chat-messages">
+                                <div class="message bot">
+                                    <p>Hi! I'm your AI Learning Assistant. How can I help you today?</p>
+                                </div>
+                            </div>
+                            <form id="chat-form" class="chat-form">
+                                <input type="text" id="chat-input" placeholder="Ask me anything..." autocomplete="off">
+                                <button type="submit" class="btn-send">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
